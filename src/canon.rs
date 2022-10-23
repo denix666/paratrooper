@@ -1,7 +1,8 @@
 use macroquad::prelude::*;
 
-const CANON_HEAD_COLOR: Color = GRAY;
-const CANON_COLOR: Color = BLUE;
+const CANON_HEAD_COLOR: Color = MAGENTA;
+const CANON_COLOR: Color = Color::new(0.0, 1.00, 1.00, 1.00);
+const STATUS_LINE_HEIGHT: f32 = 30.0;
 
 enum Status {
     MovingRight,
@@ -10,11 +11,11 @@ enum Status {
 }
 
 pub struct Canon {
-    angle: f32,
+    pub angle: f32,
     cx: f32, // canon center x
     cy: f32, // canon center y
-    ex: f32, // canon end x
-    ey: f32, // canon end y
+    pub ex: f32, // canon end x
+    pub ey: f32, // canon end y
     r: f32, // radius
     status: Status,
 }
@@ -24,27 +25,29 @@ impl Canon {
         Self {
             angle: -1.57,
             cx: screen_width() / 2.0,
-            cy: screen_height() - 80.0,
+            cy: screen_height() - 80.0 - STATUS_LINE_HEIGHT,
             ex: screen_width() / 2.0,
-            ey: screen_height() - 80.0,
+            ey: screen_height() - 80.0 - STATUS_LINE_HEIGHT,
             r: 30.0,
             status: Status::Idle,
         }
     }
 
     pub fn draw(&mut self) {
+        // Status line
+        draw_line(0.0,screen_height() - STATUS_LINE_HEIGHT, screen_width(), screen_height() - STATUS_LINE_HEIGHT,2.0, CANON_COLOR);
         // Canon stand
-        draw_rectangle(screen_width() / 2.0 - 40.0, screen_height() - 60.0, 80.0, 60.0, WHITE);
+        draw_rectangle(screen_width() / 2.0 - 40.0, screen_height() - 60.0 - STATUS_LINE_HEIGHT, 80.0, 60.0, WHITE);
         // Canon base
-        draw_rectangle(screen_width() / 2.0 - 15.0, screen_height() - 80.0, 30.0, 20.0, CANON_HEAD_COLOR);
+        draw_rectangle(screen_width() / 2.0 - 15.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 30.0, 20.0, CANON_HEAD_COLOR);
         // Canon
-        draw_line(self.cx,self.cy,self.ex + screen_width() / 2.0, self.ey + screen_height() - 80.0,8.0, CANON_COLOR);
+        draw_line(self.cx,self.cy,self.ex + screen_width() / 2.0, self.ey + screen_height() - 80.0 - STATUS_LINE_HEIGHT,8.0, CANON_COLOR);
         // Canon base
-        draw_circle(screen_width() / 2.0, screen_height() - 80.0, 15.0, CANON_HEAD_COLOR);
+        draw_circle(screen_width() / 2.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 15.0, CANON_HEAD_COLOR);
         // Canon center
-        draw_circle(screen_width() / 2.0, screen_height() - 80.0, 4.0, CANON_COLOR);
+        draw_circle(screen_width() / 2.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 4.0, CANON_COLOR);
         // Canon end
-        draw_circle(self.ex + screen_width() / 2.0, self.ey + screen_height() - 80.0, 4.0, CANON_COLOR);
+        draw_circle(self.ex + screen_width() / 2.0, self.ey + screen_height() - 80.0 - STATUS_LINE_HEIGHT, 4.0, CANON_COLOR);
     }
 
     pub fn update(&mut self) {
