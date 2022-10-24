@@ -1,6 +1,7 @@
 use macroquad::prelude::*;
 
 const ANIMATION_SPEED: i32 = 8;
+const ENEMY_SPEED: f32 = 100.0;
 
 // enum Type {
 //     Helicopter,
@@ -62,12 +63,12 @@ impl Enemy {
 
     pub fn update(&mut self) {
         if self.side == "left" {
-            self.x += 1.0;
+            self.x += get_frame_time() * ENEMY_SPEED;
             if self.x > screen_width() {
                 self.destroyed = true;
             }
         } else {
-            self.x -= 1.0;
+            self.x -= get_frame_time() * ENEMY_SPEED;
             if self.x < 0.0 - self.texture[self.cur_frame].width() {
                 self.destroyed = true;
             }

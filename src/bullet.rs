@@ -7,7 +7,7 @@ pub struct Bullet {
     y: f32,
     angle: f32,
     texture: Texture2D,
-    destroyed: bool,
+    pub destroyed: bool,
     pub rect: Rect,
     r: f32,
 }

@@ -31,3 +31,21 @@ pub fn draw_score(score: &str) {
         },
     );
 }
+
+pub fn draw_hiscore(hiscore: &str) {
+    draw_text_ex("HI-SCORE: ", 600.0, screen_height() - 7.0, 
+        TextParams {
+            font_size: 30,
+            color: WHITE,
+            ..Default::default()
+        },
+    );
+
+    draw_text_ex(hiscore, 730.0, screen_height() - 7.0, 
+        TextParams {
+            font_size: 30,
+            color: MAGENTA,
+            ..Default::default()
+        },
+    );
+}
