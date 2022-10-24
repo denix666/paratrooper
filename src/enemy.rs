@@ -11,29 +11,41 @@ pub struct Enemy {
     x: f32,
     y: f32,
     texture: Vec<Texture2D>,
-    destroyed: bool,
+    pub destroyed: bool,
     update_interval: i32,
     cur_frame: usize,
     pub rect: Rect,
+    side: String,
 }
 
 impl Enemy {
-    pub async fn new() -> Self {
+    pub async fn new(enemy_type: &str, from_side: &str) -> Self {
         let mut sprites:Vec<Texture2D> = Vec::new();
 
         for i in 1..4 {
-            let path = format!("assets/enemy/jet_{}.png", i);
+            let path = format!("assets/enemy/{}_{}_{}.png", enemy_type, from_side, i);
             sprites.push(load_texture(&path).await.unwrap());
         }
 
+        let start_x = match from_side {
+            "right" => screen_width(),
+            _ => 0.0,
+        };
+
+        let start_y = match from_side {
+            "right" => 40.0,
+            _ => 5.0,
+        };
+
         Self {
-            x: 110.0,
-            y: 110.0,
+            x: start_x,
+            y: start_y,
             texture: sprites,
             destroyed: false,
             update_interval: 0,
             cur_frame: 0,
             rect: Rect::new(0.0, 0.0, 0.0,0.0),
+            side: from_side.to_string(),
         }
     }
 
@@ -49,6 +61,18 @@ impl Enemy {
     }
 
     pub fn update(&mut self) {
+        if self.side == "left" {
+            self.x += 1.0;
+            if self.x > screen_width() {
+                self.destroyed = true;
+            }
+        } else {
+            self.x -= 1.0;
+            if self.x < 0.0 - self.texture[self.cur_frame].width() {
+                self.destroyed = true;
+            }
+        }
+        
         self.rect.w = self.texture[self.cur_frame].width();
         self.rect.h = self.texture[self.cur_frame].height();
         self.rect.x = self.x;
