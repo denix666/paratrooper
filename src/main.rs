@@ -1,5 +1,7 @@
 use macroquad::prelude::*;
 mod canon;
+mod paratrooper;
+use paratrooper::Paratrooper;
 use canon::Canon;
 mod enemy;
 use enemy::Enemy;
@@ -41,6 +43,7 @@ async fn main() {
     let mut game = Game::new().await;
     let mut canon = Canon::new().await;
     let mut bullets: Vec<Bullet> = Vec::new();
+    let mut paratroopers: Vec<Paratrooper> = Vec::new();
     let mut enemies: Vec<Enemy> = Vec::new();
     let mut game_state = GameState::Intro;
     let mut game_phase = GamePhase::Helicopters;
@@ -74,6 +77,13 @@ async fn main() {
             GameState::Game => {
                 draw_score(&game.score.to_string());
                 draw_hiscore(&game.hiscore.to_string());
+
+                // For debug
+                // if is_key_pressed(KeyCode::Space) {
+                //     paratroopers.push(
+                //         Paratrooper::new(300.0, 50.0).await,
+                //     );
+                // }
                 
                 canon.draw();
                 canon.update();
@@ -147,7 +157,18 @@ async fn main() {
                 // Draw enemies
                 for enemy in &mut enemies {
                     enemy.draw();
-                    enemy.update();
+                    if enemy.have_paratrooper && ! enemy.paratrooper_jumped {
+                        if enemy.x + 20.0 > enemy.will_jump_at && enemy.x - 20.0 < enemy.will_jump_at {
+                            paratroopers.push(
+                                Paratrooper::new(enemy.x, enemy.y).await,
+                            );
+                            enemy.paratrooper_jumped = true;
+                        }
+                    }
+                }
+
+                for paratrooper in &mut paratroopers {
+                    paratrooper.draw();
                 }
                 
                 if is_key_pressed(KeyCode::Up) {

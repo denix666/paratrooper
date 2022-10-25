@@ -1,22 +1,30 @@
 use macroquad::prelude::*;
+extern crate rand;
+use rand::Rng;
 
 const ANIMATION_SPEED: i32 = 8;
-const ENEMY_SPEED: f32 = 100.0;
+const ENEMY_SPEED: f32 = 200.0;
 
-// enum Type {
-//     Helicopter,
-//     Ship,
-// }
+fn load_paratroopers(enemy_type: String) -> bool {
+    if enemy_type == "helicopter" {
+        rand::thread_rng().gen_bool(1.0 / 3.0)
+    } else {
+        false
+    }
+}
 
 pub struct Enemy {
-    x: f32,
-    y: f32,
+    pub x: f32,
+    pub y: f32,
     texture: Vec<Texture2D>,
     pub destroyed: bool,
     update_interval: i32,
     cur_frame: usize,
     pub rect: Rect,
     side: String,
+    pub have_paratrooper: bool,
+    pub will_jump_at: f32,
+    pub paratrooper_jumped: bool,
 }
 
 impl Enemy {
@@ -38,6 +46,11 @@ impl Enemy {
             _ => 5.0,
         };
 
+        let jump_point = match from_side {
+            "left" => rand::thread_rng().gen_range(100.0..=350.0)/50.0*50.0,
+            _ => rand::thread_rng().gen_range(500.0..=700.0)/50.0*50.0,
+        };
+
         Self {
             x: start_x,
             y: start_y,
@@ -47,6 +60,9 @@ impl Enemy {
             cur_frame: 0,
             rect: Rect::new(0.0, 0.0, 0.0,0.0),
             side: from_side.to_string(),
+            have_paratrooper: load_paratroopers(enemy_type.to_string()),
+            will_jump_at: jump_point,
+            paratrooper_jumped: false,
         }
     }
 
