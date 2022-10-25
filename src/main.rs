@@ -78,13 +78,6 @@ async fn main() {
                 draw_score(&game.score.to_string());
                 draw_hiscore(&game.hiscore.to_string());
 
-                // For debug
-                // if is_key_pressed(KeyCode::Space) {
-                //     paratroopers.push(
-                //         Paratrooper::new(300.0, 50.0).await,
-                //     );
-                // }
-                
                 canon.draw();
                 canon.update();
 
@@ -188,6 +181,27 @@ async fn main() {
                                 enemy.destroyed = true;
                                 bullet.destroyed = true;
                                 game.score += 10;
+                                break;
+                            }
+                        }
+                    }
+                    for paratrooper in &mut paratroopers {
+                        if !paratrooper.destroyed && !bullet.destroyed {
+                            if let Some(_) = bullet.rect.intersect(paratrooper.trooper_rect) {
+                                paratrooper.destroyed = true;
+                                bullet.destroyed = true;
+                                game.score += 5;
+                                break;
+                            }
+                        }
+                    }
+                    for paratrooper in &mut paratroopers {
+                        if !paratrooper.destroyed && !bullet.destroyed {
+                            if let Some(_) = bullet.rect.intersect(paratrooper.para_rect) {
+                                bullet.destroyed = true;
+                                paratrooper.have_para = false;
+                                paratrooper.para_destroyed = true;
+                                break;
                             }
                         }
                     }
