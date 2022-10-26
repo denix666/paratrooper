@@ -47,8 +47,8 @@ impl Enemy {
         };
 
         let jump_point = match from_side {
-            "left" => rand::thread_rng().gen_range(100.0..=350.0)/50.0*50.0,
-            _ => rand::thread_rng().gen_range(500.0..=700.0)/50.0*50.0,
+            "left" => rand::thread_rng().gen_range(100.0..=350.0)/150.0*150.0,
+            _ => rand::thread_rng().gen_range(500.0..=700.0)/150.0*150.0,
         };
 
         Self {

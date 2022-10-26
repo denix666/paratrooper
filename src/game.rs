@@ -6,6 +6,8 @@ pub struct Game {
     pub spawned_enemy: i32,
     pub enemy_on_screen: i32,
     pub level: i32,
+    pub landed_on_left_side: i32,
+    pub landed_on_right_side: i32,
 }
 
 impl Game {
@@ -18,6 +20,8 @@ impl Game {
             spawned_enemy: 0,
             enemy_on_screen: 0,
             level: 0,
+            landed_on_left_side: 0,
+            landed_on_right_side: 0,
         }
     }
 }

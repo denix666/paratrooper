@@ -5,6 +5,8 @@ use paratrooper::Paratrooper;
 use canon::Canon;
 mod enemy;
 use enemy::Enemy;
+mod divs;
+use divs::Divs;
 mod bullet;
 use bullet::Bullet;
 mod game;
@@ -43,6 +45,8 @@ async fn main() {
     let mut game = Game::new().await;
     let mut canon = Canon::new().await;
     let mut bullets: Vec<Bullet> = Vec::new();
+    let mut rdivs: Vec<Divs> = Vec::new();
+    let mut ldivs: Vec<Divs> = Vec::new();
     let mut paratroopers: Vec<Paratrooper> = Vec::new();
     let mut enemies: Vec<Enemy> = Vec::new();
     let mut game_state = GameState::Intro;
@@ -144,7 +148,9 @@ async fn main() {
                             }
                         }
                     },
-                    GamePhase::Paratroopers => {},
+                    GamePhase::Paratroopers => {
+                        println!("divs phase");
+                    },
                 }
 
                 // Draw enemies
@@ -162,8 +168,54 @@ async fn main() {
 
                 for paratrooper in &mut paratroopers {
                     paratrooper.draw();
+                    if !paratrooper.destroyed {
+                        if paratrooper.landed {
+                            paratrooper.destroyed = true;
+                            if paratrooper.trooper_x > 400.0 {
+                                rdivs.push(
+                                    Divs::new(paratrooper.trooper_x, paratrooper.trooper_y).await,
+                                );
+                                game.landed_on_right_side += 1;
+                            } else {
+                                ldivs.push(
+                                    Divs::new(paratrooper.trooper_x, paratrooper.trooper_y).await,
+                                );
+                                game.landed_on_left_side += 1;
+                            }
+                        }
+                    }
                 }
-                
+
+                for div in &mut rdivs {
+                    div.draw();
+                    for paratrooper in &mut paratroopers {
+                        if !paratrooper.destroyed && !paratrooper.have_para {
+                            if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
+                                paratrooper.destroyed = true;
+                                div.destroyed = true;
+                                game.landed_on_right_side -= 1;
+                            }
+                        }
+                    }
+                }
+
+                for div in &mut ldivs {
+                    div.draw();
+                    for paratrooper in &mut paratroopers {
+                        if !paratrooper.destroyed && !paratrooper.have_para {
+                            if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
+                                paratrooper.destroyed = true;
+                                div.destroyed = true;
+                                game.landed_on_left_side -= 1;
+                            }
+                        }
+                    }
+                }
+
+                if game.landed_on_right_side == 4 || game.landed_on_left_side == 4 {
+                    game_phase = GamePhase::Paratroopers;
+                }
+
                 if is_key_pressed(KeyCode::Up) {
                     bullets.push(Bullet::new(canon.ex + screen_width() / 2.0, canon.ey + screen_height() - 110.0, canon.angle).await);
                     game.score -= 1;

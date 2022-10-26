@@ -5,8 +5,8 @@ use rand::Rng;
 const SPEED: f32 = 150.0;
 
 pub struct Paratrooper {
-    trooper_x: f32,
-    trooper_y: f32,
+    pub trooper_x: f32,
+    pub trooper_y: f32,
     para_texture: Texture2D,
     trooper_texture: Texture2D,
     pub para_rect: Rect,
@@ -15,6 +15,7 @@ pub struct Paratrooper {
     pub para_destroyed: bool,
     pub have_para: bool,
     open_para_at: f32,
+    pub landed: bool,
 }
 
 impl Paratrooper {
@@ -30,6 +31,7 @@ impl Paratrooper {
             para_destroyed: false,
             have_para: false,
             open_para_at: rand::thread_rng().gen_range(150.0..=400.0),
+            landed: false,
         }
     }
 
@@ -58,10 +60,15 @@ impl Paratrooper {
         if self.trooper_y > screen_height() - 30.0 - self.trooper_texture.height() && !self.have_para {
             self.destroyed = true;
         }
+
+        if self.trooper_y > screen_height() - 30.0 - self.trooper_texture.height() && self.have_para {
+            self.landed = true;
+        }
+
     }
 
     pub fn draw(&mut self) {
-        if !self.destroyed {
+        if !self.destroyed && !self.landed {
             self.update();
             draw_texture(self.trooper_texture, self.trooper_x, self.trooper_y, WHITE);
             if self.have_para {
