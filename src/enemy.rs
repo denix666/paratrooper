@@ -46,9 +46,9 @@ impl Enemy {
             _ => 5.0,
         };
 
-        let jump_point = match from_side {
-            "left" => rand::thread_rng().gen_range(100.0..=350.0)/150.0*150.0,
-            _ => rand::thread_rng().gen_range(500.0..=700.0)/150.0*150.0,
+        let jump_point: i32 = match from_side {
+            "left" => rand::thread_rng().gen_range(50..=350)/50*50,
+            _ => rand::thread_rng().gen_range(500..=800)/50*50,
         };
 
         Self {
@@ -61,7 +61,7 @@ impl Enemy {
             rect: Rect::new(0.0, 0.0, 0.0,0.0),
             side: from_side.to_string(),
             have_paratrooper: load_paratroopers(enemy_type.to_string()),
-            will_jump_at: jump_point,
+            will_jump_at: jump_point as f32,
             paratrooper_jumped: false,
         }
     }

@@ -16,6 +16,8 @@ use functions::*;
 extern crate rand;
 use rand::Rng;
 
+const MAX_LANDED: usize = 4;
+
 pub enum GameState {
     Intro,
     Instructions,
@@ -159,7 +161,7 @@ async fn main() {
                     if enemy.have_paratrooper && ! enemy.paratrooper_jumped {
                         if enemy.x + 20.0 > enemy.will_jump_at && enemy.x - 20.0 < enemy.will_jump_at {
                             paratroopers.push(
-                                Paratrooper::new(enemy.x, enemy.y).await,
+                                Paratrooper::new(enemy.will_jump_at, enemy.y).await,
                             );
                             enemy.paratrooper_jumped = true;
                         }
@@ -167,7 +169,21 @@ async fn main() {
                 }
 
                 for paratrooper in &mut paratroopers {
+                    for div in &mut ldivs {
+                        if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
+                            paratrooper.landed = true;
+                            println!("vot ono");
+                        }
+                    }
+                    for div in &mut rdivs {
+                        if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
+                            paratrooper.landed = true;
+                            println!("vot ono");
+                        }
+                    }
+
                     paratrooper.draw();
+
                     if !paratrooper.destroyed {
                         if paratrooper.landed {
                             paratrooper.destroyed = true;
@@ -175,12 +191,10 @@ async fn main() {
                                 rdivs.push(
                                     Divs::new(paratrooper.trooper_x, paratrooper.trooper_y).await,
                                 );
-                                game.landed_on_right_side += 1;
                             } else {
                                 ldivs.push(
                                     Divs::new(paratrooper.trooper_x, paratrooper.trooper_y).await,
                                 );
-                                game.landed_on_left_side += 1;
                             }
                         }
                     }
@@ -193,7 +207,6 @@ async fn main() {
                             if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
                                 paratrooper.destroyed = true;
                                 div.destroyed = true;
-                                game.landed_on_right_side -= 1;
                             }
                         }
                     }
@@ -206,14 +219,9 @@ async fn main() {
                             if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
                                 paratrooper.destroyed = true;
                                 div.destroyed = true;
-                                game.landed_on_left_side -= 1;
                             }
                         }
                     }
-                }
-
-                if game.landed_on_right_side == 4 || game.landed_on_left_side == 4 {
-                    game_phase = GamePhase::Paratroopers;
                 }
 
                 if is_key_pressed(KeyCode::Up) {
@@ -258,6 +266,41 @@ async fn main() {
                         }
                     }
                 }
+
+                // Clear vectors
+                match bullets.iter().position(|x| x.destroyed == true) {
+                    Some(idx) => {
+                        bullets.remove(idx);
+                    },
+                    None => {},
+                };
+
+                match paratroopers.iter().position(|x| x.destroyed == true) {
+                    Some(idx) => {
+                        paratroopers.remove(idx);
+                    },
+                    None => {},
+                };
+
+                match ldivs.iter().position(|x| x.destroyed == true) {
+                    Some(idx) => {
+                        ldivs.remove(idx);
+                    },
+                    None => {},
+                };
+
+                match rdivs.iter().position(|x| x.destroyed == true) {
+                    Some(idx) => {
+                        rdivs.remove(idx);
+                    },
+                    None => {},
+                };
+
+                // Check how many divs were landed and switch game phase
+                if rdivs.len() >= MAX_LANDED || ldivs.len() >= MAX_LANDED {
+                    game_phase = GamePhase::Paratroopers;
+                }
+
 
                 // Store Hi-Score in var
                 if game.score > game.hiscore {
