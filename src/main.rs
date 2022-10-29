@@ -9,6 +9,8 @@ mod divs;
 use divs::Divs;
 mod bullet;
 use bullet::Bullet;
+mod bomb;
+use bomb::Bomb;
 mod game;
 use game::Game;
 mod functions;
@@ -49,6 +51,7 @@ async fn main() {
     let mut bullets: Vec<Bullet> = Vec::new();
     let mut rdivs: Vec<Divs> = Vec::new();
     let mut ldivs: Vec<Divs> = Vec::new();
+    let mut bombs: Vec<Bomb> = Vec::new();
     let mut paratroopers: Vec<Paratrooper> = Vec::new();
     let mut enemies: Vec<Enemy> = Vec::new();
     let mut game_state = GameState::Intro;
@@ -86,6 +89,12 @@ async fn main() {
 
                 canon.draw();
                 canon.update();
+
+                if is_key_pressed(KeyCode::Space) {
+                    bombs.push(
+                        Bomb::new(100.0, 50.0 + 30.0, "left".to_string()).await,
+                    );
+                }
 
                 match game_phase {
                     GamePhase::Helicopters => {
@@ -130,7 +139,18 @@ async fn main() {
                         if game.spawned_enemy < 3 { // TODO how match jets will spawn in this phase (may be random amount?)
                             if get_time() - game.last_spawn_time >= rand::thread_rng().gen_range(0.4..=6.0) {
                                 game.last_spawn_time = get_time();
-                                enemies.push(Enemy::new("jet", "left").await);
+                                match rand::thread_rng().gen_range(0..=1) { 
+                                    0 => {
+                                        enemies.push(
+                                            Enemy::new("jet", "right").await,
+                                        );
+                                    },
+                                    _ => {
+                                        enemies.push(
+                                            Enemy::new("jet", "left").await,
+                                        );
+                                    },
+                                };
                                 game.spawned_enemy += 1;
                             }
                         } else {
@@ -158,12 +178,26 @@ async fn main() {
                 // Draw enemies
                 for enemy in &mut enemies {
                     enemy.draw();
-                    if enemy.have_paratrooper && ! enemy.paratrooper_jumped {
-                        if enemy.x + 20.0 > enemy.will_jump_at && enemy.x - 20.0 < enemy.will_jump_at {
+                    if enemy.have_paratrooper && !enemy.paratrooper_jumped {
+                        if enemy.center_x() + 20.0 > enemy.will_jump_at && enemy.center_x() - 20.0 < enemy.will_jump_at {
                             paratroopers.push(
                                 Paratrooper::new(enemy.will_jump_at, enemy.y).await,
                             );
                             enemy.paratrooper_jumped = true;
+                        }
+                    }
+                    if enemy.have_bomb  && !enemy.bomb_released {
+                        if enemy.center_x() + 20.0 > enemy.will_bomb_at && enemy.center_x() - 20.0 < enemy.will_bomb_at {
+                            let side: String;
+                            if enemy.will_bomb_at == 100.0 {
+                                side = "left".to_string()
+                            } else {
+                                side = "right".to_string()
+                            }
+                            bombs.push(
+                                Bomb::new(enemy.will_bomb_at, enemy.y + 30.0, side).await,
+                            );
+                            enemy.bomb_released = true;
                         }
                     }
                 }
@@ -172,13 +206,11 @@ async fn main() {
                     for div in &mut ldivs {
                         if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
                             paratrooper.landed = true;
-                            println!("vot ono");
                         }
                     }
                     for div in &mut rdivs {
                         if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
                             paratrooper.landed = true;
-                            println!("vot ono");
                         }
                     }
 
@@ -265,9 +297,29 @@ async fn main() {
                             }
                         }
                     }
+                    for bomb in &mut bombs {
+                        if !bomb.destroyed && !bullet.destroyed {
+                            if let Some(_) = bullet.rect.intersect(bomb.rect) {
+                                bullet.destroyed = true;
+                                bomb.destroyed = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                for bomb in &mut bombs {
+                    bomb.draw();
                 }
 
                 // Clear vectors
+                match bombs.iter().position(|x| x.destroyed == true) {
+                    Some(idx) => {
+                        bombs.remove(idx);
+                    },
+                    None => {},
+                };
+                
                 match bullets.iter().position(|x| x.destroyed == true) {
                     Some(idx) => {
                         bullets.remove(idx);

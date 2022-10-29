@@ -13,6 +13,14 @@ fn load_paratroopers(enemy_type: String) -> bool {
     }
 }
 
+fn load_bombs(enemy_type: String) -> bool {
+    if enemy_type == "jet" {
+        rand::thread_rng().gen_bool(1.0 / 2.0)
+    } else {
+        false
+    }
+}
+
 pub struct Enemy {
     pub x: f32,
     pub y: f32,
@@ -23,8 +31,11 @@ pub struct Enemy {
     pub rect: Rect,
     side: String,
     pub have_paratrooper: bool,
+    pub have_bomb: bool,
     pub will_jump_at: f32,
+    pub will_bomb_at: f32,
     pub paratrooper_jumped: bool,
+    pub bomb_released: bool,
 }
 
 impl Enemy {
@@ -48,7 +59,12 @@ impl Enemy {
 
         let jump_point: i32 = match from_side {
             "left" => rand::thread_rng().gen_range(50..=350)/50*50,
-            _ => rand::thread_rng().gen_range(500..=800)/50*50,
+            _ => rand::thread_rng().gen_range(500..=750)/50*50,
+        };
+
+        let bomb_push_point: f32 = match from_side {
+            "left" => 100.0,
+            _ => 700.0,
         };
 
         Self {
@@ -61,8 +77,11 @@ impl Enemy {
             rect: Rect::new(0.0, 0.0, 0.0,0.0),
             side: from_side.to_string(),
             have_paratrooper: load_paratroopers(enemy_type.to_string()),
+            have_bomb: load_bombs(enemy_type.to_string()),
             will_jump_at: jump_point as f32,
             paratrooper_jumped: false,
+            will_bomb_at: bomb_push_point,
+            bomb_released: false,
         }
     }
 
@@ -75,6 +94,10 @@ impl Enemy {
                 self.cur_frame = 0;
             }
         }
+    }
+
+    pub fn center_x(&mut self) -> f32 {
+        self.texture[self.cur_frame].width() / 2.0 + self.x
     }
 
     pub fn update(&mut self) {
