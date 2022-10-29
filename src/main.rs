@@ -1,4 +1,4 @@
-use macroquad::prelude::*;
+use macroquad::{prelude::*, audio::{PlaySoundParams, play_sound}};
 mod canon;
 mod paratrooper;
 use paratrooper::Paratrooper;
@@ -198,6 +198,10 @@ async fn main() {
                                 Bomb::new(enemy.will_bomb_at, enemy.y + 30.0, side).await,
                             );
                             enemy.bomb_released = true;
+                            play_sound(resources.bomb, PlaySoundParams {
+                                looped: false,
+                                volume: 1.0,
+                            });
                         }
                     }
                 }
@@ -259,6 +263,10 @@ async fn main() {
                 if is_key_pressed(KeyCode::Up) {
                     bullets.push(Bullet::new(canon.ex + screen_width() / 2.0, canon.ey + screen_height() - 110.0, canon.angle).await);
                     game.score -= 1;
+                    play_sound(resources.shot, PlaySoundParams {
+                        looped: false,
+                        volume: 0.3,
+                    });
                     if game.score < 0 {
                         game.score = 0;
                     }
@@ -273,6 +281,10 @@ async fn main() {
                                 enemy.destroyed = true;
                                 bullet.destroyed = true;
                                 game.score += 10;
+                                play_sound(resources.crash, PlaySoundParams {
+                                    looped: false,
+                                    volume: 0.3,
+                                });
                                 break;
                             }
                         }
@@ -283,6 +295,10 @@ async fn main() {
                                 paratrooper.destroyed = true;
                                 bullet.destroyed = true;
                                 game.score += 5;
+                                play_sound(resources.crash, PlaySoundParams {
+                                    looped: false,
+                                    volume: 0.3,
+                                });
                                 break;
                             }
                         }
@@ -293,6 +309,10 @@ async fn main() {
                                 bullet.destroyed = true;
                                 paratrooper.have_para = false;
                                 paratrooper.para_destroyed = true;
+                                play_sound(resources.crash, PlaySoundParams {
+                                    looped: false,
+                                    volume: 0.3,
+                                });
                                 break;
                             }
                         }
@@ -302,6 +322,11 @@ async fn main() {
                             if let Some(_) = bullet.rect.intersect(bomb.rect) {
                                 bullet.destroyed = true;
                                 bomb.destroyed = true;
+                                game.score += 30;
+                                play_sound(resources.crash, PlaySoundParams {
+                                    looped: false,
+                                    volume: 0.3,
+                                });
                                 break;
                             }
                         }
@@ -327,12 +352,12 @@ async fn main() {
                     None => {},
                 };
 
-                match paratroopers.iter().position(|x| x.destroyed == true) {
-                    Some(idx) => {
-                        paratroopers.remove(idx);
-                    },
-                    None => {},
-                };
+                // match paratroopers.iter().position(|x| x.destroyed == true) {
+                //     Some(idx) => {
+                //         paratroopers.remove(idx);
+                //     },
+                //     None => {},
+                // };
 
                 match ldivs.iter().position(|x| x.destroyed == true) {
                     Some(idx) => {

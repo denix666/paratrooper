@@ -1,8 +1,11 @@
-use macroquad::prelude::*;
+use macroquad::{prelude::*, audio::{Sound, load_sound}};
 
 pub struct Resources {
     pub intro_texture: Texture2D,
     pub instructions_texture: Texture2D,
+    pub shot: Sound,
+    pub bomb: Sound,
+    pub crash: Sound,
 }
 
 impl Resources {
@@ -10,6 +13,9 @@ impl Resources {
         Self {
             intro_texture: load_texture("assets/intro.png").await.unwrap(),
             instructions_texture: load_texture("assets/instructions.png").await.unwrap(),
+            shot: load_sound("assets/audio/shot.ogg").await.unwrap(),
+            bomb: load_sound("assets/audio/bomb.ogg").await.unwrap(),
+            crash: load_sound("assets/audio/crash.ogg").await.unwrap(),
         }
     }
 }

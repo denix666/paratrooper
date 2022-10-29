@@ -65,16 +65,16 @@ impl Canon {
 
         match self.status {
             Status::MovingRight => {
-                self.angle += 0.04;
-                if self.angle > -0.4 {
-                    self.angle = -0.4;
+                self.angle += 0.05;
+                if self.angle > -0.14 {
+                    self.angle = -0.14;
                     self.status = Status::Idle;
                 }
             },
             Status::MovingLeft => {
-                self.angle -= 0.04;
-                if self.angle < -2.7 {
-                    self.angle = -2.7;
+                self.angle -= 0.05;
+                if self.angle < -2.9 {
+                    self.angle = -2.9;
                     self.status = Status::Idle;
                 }
             },
