@@ -13,12 +13,14 @@ mod bomb;
 use bomb::Bomb;
 mod game;
 use game::Game;
+mod animation;
+use animation::Animation;
 mod functions;
 use functions::*;
 extern crate rand;
 use rand::Rng;
 
-const MAX_LANDED: usize = 4;
+const MAX_LANDED: usize = 14;
 
 pub enum GameState {
     Intro,
@@ -52,6 +54,7 @@ async fn main() {
     let mut rdivs: Vec<Divs> = Vec::new();
     let mut ldivs: Vec<Divs> = Vec::new();
     let mut bombs: Vec<Bomb> = Vec::new();
+    let mut animations: Vec<Animation> = Vec::new();
     let mut paratroopers: Vec<Paratrooper> = Vec::new();
     let mut enemies: Vec<Enemy> = Vec::new();
     let mut game_state = GameState::Intro;
@@ -90,10 +93,14 @@ async fn main() {
                 canon.draw();
                 canon.update();
 
+                // DEBUG
                 if is_key_pressed(KeyCode::Space) {
-                    bombs.push(
-                        Bomb::new(100.0, 50.0 + 30.0, "left".to_string()).await,
-                    );
+                    // bombs.push(
+                    //     Bomb::new(100.0, 50.0 + 30.0, "left".to_string()).await,
+                    // );
+                    // animations.push(
+                    //     Animation::new(100.0, 100.0, "die").await,
+                    // );
                 }
 
                 match game_phase {
@@ -220,18 +227,22 @@ async fn main() {
 
                     paratrooper.draw();
 
-                    if !paratrooper.destroyed {
-                        if paratrooper.landed {
-                            paratrooper.destroyed = true;
-                            if paratrooper.trooper_x > 400.0 {
-                                rdivs.push(
-                                    Divs::new(paratrooper.trooper_x, paratrooper.trooper_y).await,
-                                );
-                            } else {
-                                ldivs.push(
-                                    Divs::new(paratrooper.trooper_x, paratrooper.trooper_y).await,
-                                );
-                            }
+                    if paratrooper.landed {
+                        paratrooper.destroyed = true;
+                        if paratrooper.trooper_x > 400.0 {
+                            rdivs.push(
+                                Divs::new(paratrooper.trooper_x, paratrooper.trooper_y).await,
+                            );
+                        } else {
+                            ldivs.push(
+                                Divs::new(paratrooper.trooper_x, paratrooper.trooper_y).await,
+                            );
+                        }
+                    } else {
+                        if paratrooper.trooper_y > screen_height() - 53.0 && !paratrooper.have_para {
+                            animations.push(
+                                Animation::new(paratrooper.trooper_x - 15.0, paratrooper.trooper_y - 25.0, "die").await,
+                            );
                         }
                     }
                 }
@@ -239,10 +250,13 @@ async fn main() {
                 for div in &mut rdivs {
                     div.draw();
                     for paratrooper in &mut paratroopers {
-                        if !paratrooper.destroyed && !paratrooper.have_para {
+                        if !paratrooper.have_para {
                             if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
                                 paratrooper.destroyed = true;
                                 div.destroyed = true;
+                                animations.push(
+                                    Animation::new(paratrooper.trooper_x - 15.0, paratrooper.trooper_y - 25.0, "die").await,
+                                );
                             }
                         }
                     }
@@ -251,10 +265,13 @@ async fn main() {
                 for div in &mut ldivs {
                     div.draw();
                     for paratrooper in &mut paratroopers {
-                        if !paratrooper.destroyed && !paratrooper.have_para {
+                        if !paratrooper.have_para {
                             if let Some(_) = div.rect.intersect(paratrooper.trooper_rect) {
                                 paratrooper.destroyed = true;
                                 div.destroyed = true;
+                                animations.push(
+                                    Animation::new(paratrooper.trooper_x - 15.0, paratrooper.trooper_y - 25.0, "die").await,
+                                );
                             }
                         }
                     }
@@ -290,7 +307,7 @@ async fn main() {
                         }
                     }
                     for paratrooper in &mut paratroopers {
-                        if !paratrooper.destroyed && !bullet.destroyed {
+                        if !bullet.destroyed {
                             if let Some(_) = bullet.rect.intersect(paratrooper.trooper_rect) {
                                 paratrooper.destroyed = true;
                                 bullet.destroyed = true;
@@ -299,12 +316,15 @@ async fn main() {
                                     looped: false,
                                     volume: 0.3,
                                 });
+                                animations.push(
+                                    Animation::new(paratrooper.trooper_x - 15.0, paratrooper.trooper_y - 25.0, "trooper_explode").await,
+                                );
                                 break;
                             }
                         }
                     }
                     for paratrooper in &mut paratroopers {
-                        if !paratrooper.destroyed && !bullet.destroyed {
+                        if !bullet.destroyed {
                             if let Some(_) = bullet.rect.intersect(paratrooper.para_rect) {
                                 bullet.destroyed = true;
                                 paratrooper.have_para = false;
@@ -333,6 +353,10 @@ async fn main() {
                     }
                 }
 
+                for animation in &mut animations {
+                    animation.draw();
+                }
+
                 for bomb in &mut bombs {
                     bomb.draw();
                 }
@@ -344,6 +368,20 @@ async fn main() {
                     },
                     None => {},
                 };
+
+                match enemies.iter().position(|x| x.destroyed == true) {
+                    Some(idx) => {
+                        enemies.remove(idx);
+                    },
+                    None => {},
+                };
+
+                match animations.iter().position(|x| x.animation_completed == true) {
+                    Some(idx) => {
+                        animations.remove(idx);
+                    },
+                    None => {},
+                };
                 
                 match bullets.iter().position(|x| x.destroyed == true) {
                     Some(idx) => {
@@ -352,12 +390,12 @@ async fn main() {
                     None => {},
                 };
 
-                // match paratroopers.iter().position(|x| x.destroyed == true) {
-                //     Some(idx) => {
-                //         paratroopers.remove(idx);
-                //     },
-                //     None => {},
-                // };
+                match paratroopers.iter().position(|x| x.destroyed == true) {
+                    Some(idx) => {
+                        paratroopers.remove(idx);
+                    },
+                    None => {},
+                };
 
                 match ldivs.iter().position(|x| x.destroyed == true) {
                     Some(idx) => {

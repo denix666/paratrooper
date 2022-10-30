@@ -58,7 +58,7 @@ impl Enemy {
         };
 
         let jump_point: i32 = match from_side {
-            "left" => rand::thread_rng().gen_range(50..=350)/50*50,
+            "left" => rand::thread_rng().gen_range(50..=300)/50*50,
             _ => rand::thread_rng().gen_range(500..=750)/50*50,
         };
 
@@ -120,10 +120,8 @@ impl Enemy {
     }
 
     pub fn draw(&mut self) {
-        if !self.destroyed {
-            self.update_animation();
-            self.update();
-            draw_texture(self.texture[self.cur_frame], self.x, self.y, WHITE);
-        }
+        self.update_animation();
+        self.update();
+        draw_texture(self.texture[self.cur_frame], self.x, self.y, WHITE);
     }
 }
