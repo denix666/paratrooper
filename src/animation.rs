@@ -22,9 +22,15 @@ impl Animation {
                     animation_sprites.push(load_texture(&path).await.unwrap());
                 }
             },
-            "trooper_explode" => {
+            "bomb_explode" => {
                 for i in 1..=9 { // Number of sprites in animation
-                    let path = format!("assets/trooper_explode/explode_{}.png", i);
+                    let path = format!("assets/bomb_explosion/explode_{}.png", i);
+                    animation_sprites.push(load_texture(&path).await.unwrap());
+                }
+            },
+            "enemy_explode" => {
+                for i in 1..=10 { // Number of sprites in animation
+                    let path = format!("assets/enemy_explosion/enemy_explosion_{}.png", i);
                     animation_sprites.push(load_texture(&path).await.unwrap());
                 }
             },

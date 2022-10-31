@@ -2,7 +2,7 @@ use macroquad::prelude::*;
 extern crate rand;
 use rand::Rng;
 
-const SPEED: f32 = 200.0;
+const SPEED: f32 = 220.0;
 
 pub struct Paratrooper {
     pub trooper_x: f32,

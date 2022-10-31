@@ -3,7 +3,7 @@ extern crate rand;
 use rand::Rng;
 
 const ANIMATION_SPEED: i32 = 8;
-const ENEMY_SPEED: f32 = 200.0;
+const ENEMY_SPEED: f32 = 220.0;
 
 fn load_paratroopers(enemy_type: String) -> bool {
     if enemy_type == "helicopter" {
@@ -98,6 +98,10 @@ impl Enemy {
 
     pub fn center_x(&mut self) -> f32 {
         self.texture[self.cur_frame].width() / 2.0 + self.x
+    }
+
+    pub fn center_y(&mut self) -> f32 {
+        self.texture[self.cur_frame].height() / 2.0 + self.y
     }
 
     pub fn update(&mut self) {

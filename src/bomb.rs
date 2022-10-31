@@ -35,11 +35,9 @@ impl Bomb {
                 self.x -= get_frame_time() * SPEED;
             }
         }
-        if self.y < 500.0 {
+        if self.y < 550.0 {
             self.gravi += 0.015;
             self.y += self.gravi;
-        } else {
-            self.destroyed = true;
         }
 
         self.rect.w = self.texture.width();

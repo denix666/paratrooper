@@ -20,12 +20,13 @@ use functions::*;
 extern crate rand;
 use rand::Rng;
 
-const MAX_LANDED: usize = 14;
+const MAX_LANDED: usize = 4;
 
 pub enum GameState {
     Intro,
     Instructions,
     Game,
+    LevelFail,
 }
 
 pub enum GamePhase {
@@ -82,7 +83,19 @@ async fn main() {
                 
                 if is_key_pressed(KeyCode::Space) {
                     game.score = 0;
+                    canon.destroyed = false;
+                    game.spawned_enemy = 0;
+                    game.enemy_amount_now = 0;
+                    game.enemy_on_screen = 0;
+                    game.level = 0;
+                    enemies.clear();
+                    paratroopers.clear();
+                    bombs.clear();
+                    ldivs.clear();
+                    rdivs.clear();
+                    bullets.clear();
                     game_state = GameState::Game;
+                    game_phase = GamePhase::Helicopters;
                 }
             },
             
@@ -95,12 +108,9 @@ async fn main() {
 
                 // DEBUG
                 if is_key_pressed(KeyCode::Space) {
-                    // bombs.push(
-                    //     Bomb::new(100.0, 50.0 + 30.0, "left".to_string()).await,
-                    // );
-                    // animations.push(
-                    //     Animation::new(100.0, 100.0, "die").await,
-                    // );
+                    bombs.push(
+                        Bomb::new(100.0, 50.0 + 30.0, "left".to_string()).await,
+                    );
                 }
 
                 match game_phase {
@@ -178,7 +188,17 @@ async fn main() {
                         }
                     },
                     GamePhase::Paratroopers => {
-                        println!("divs phase");
+                        // 4 or more divs landed - game over
+                        canon.destroyed = true;
+                        animations.push(
+                            Animation::new(screen_width() / 2.0 - 24.0, screen_height() - 150.0, "enemy_explode").await,
+                        );
+                        game.fail_time = get_time();
+                        play_sound(resources.outro, PlaySoundParams {
+                            looped: false,
+                            volume: 0.3,
+                        });
+                        game_state = GameState::LevelFail;
                     },
                 }
 
@@ -277,7 +297,7 @@ async fn main() {
                     }
                 }
 
-                if is_key_pressed(KeyCode::Up) {
+                if is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::Kp8) {
                     bullets.push(Bullet::new(canon.ex + screen_width() / 2.0, canon.ey + screen_height() - 110.0, canon.angle).await);
                     game.score -= 1;
                     play_sound(resources.shot, PlaySoundParams {
@@ -302,6 +322,9 @@ async fn main() {
                                     looped: false,
                                     volume: 0.3,
                                 });
+                                animations.push(
+                                    Animation::new(enemy.center_x() - 24.0, enemy.center_y() - 25.0, "enemy_explode").await,
+                                );
                                 break;
                             }
                         }
@@ -317,7 +340,7 @@ async fn main() {
                                     volume: 0.3,
                                 });
                                 animations.push(
-                                    Animation::new(paratrooper.trooper_x - 15.0, paratrooper.trooper_y - 25.0, "trooper_explode").await,
+                                    Animation::new(paratrooper.trooper_x - 18.0, paratrooper.trooper_y - 19.0, "enemy_explode").await,
                                 );
                                 break;
                             }
@@ -347,6 +370,9 @@ async fn main() {
                                     looped: false,
                                     volume: 0.3,
                                 });
+                                animations.push(
+                                    Animation::new(bomb.x, bomb.y, "bomb_explode").await,
+                                );
                                 break;
                             }
                         }
@@ -359,57 +385,20 @@ async fn main() {
 
                 for bomb in &mut bombs {
                     bomb.draw();
+                    if bomb.y > screen_height() - 80.0 {
+                        canon.destroyed = true;
+                        bomb.destroyed = true;
+                        animations.push(
+                            Animation::new(screen_width() / 2.0 - 24.0, screen_height() - 150.0, "enemy_explode").await,
+                        );
+                        game.fail_time = get_time();
+                        play_sound(resources.outro, PlaySoundParams {
+                            looped: false,
+                            volume: 0.3,
+                        });
+                        game_state = GameState::LevelFail;
+                    }
                 }
-
-                // Clear vectors
-                match bombs.iter().position(|x| x.destroyed == true) {
-                    Some(idx) => {
-                        bombs.remove(idx);
-                    },
-                    None => {},
-                };
-
-                match enemies.iter().position(|x| x.destroyed == true) {
-                    Some(idx) => {
-                        enemies.remove(idx);
-                    },
-                    None => {},
-                };
-
-                match animations.iter().position(|x| x.animation_completed == true) {
-                    Some(idx) => {
-                        animations.remove(idx);
-                    },
-                    None => {},
-                };
-                
-                match bullets.iter().position(|x| x.destroyed == true) {
-                    Some(idx) => {
-                        bullets.remove(idx);
-                    },
-                    None => {},
-                };
-
-                match paratroopers.iter().position(|x| x.destroyed == true) {
-                    Some(idx) => {
-                        paratroopers.remove(idx);
-                    },
-                    None => {},
-                };
-
-                match ldivs.iter().position(|x| x.destroyed == true) {
-                    Some(idx) => {
-                        ldivs.remove(idx);
-                    },
-                    None => {},
-                };
-
-                match rdivs.iter().position(|x| x.destroyed == true) {
-                    Some(idx) => {
-                        rdivs.remove(idx);
-                    },
-                    None => {},
-                };
 
                 // Check how many divs were landed and switch game phase
                 if rdivs.len() >= MAX_LANDED || ldivs.len() >= MAX_LANDED {
@@ -421,8 +410,95 @@ async fn main() {
                 if game.score > game.hiscore {
                     game.hiscore = game.score;
                 }
-            }
+            },
+            GameState::LevelFail => {
+                draw_score(&game.score.to_string());
+                draw_hiscore(&game.hiscore.to_string());
+
+                canon.draw();
+
+                for animation in &mut animations {
+                    animation.draw();
+                }
+
+                for enemy in &mut enemies {
+                    enemy.draw();
+                }
+                if get_time() - game.fail_time >= 6.0 {
+                    draw_play_again_text();
+
+                    if is_key_pressed(KeyCode::Space) {
+                        game.score = 0;
+                        canon.destroyed = false;
+                        game.spawned_enemy = 0;
+                        game.enemy_amount_now = 0;
+                        game.enemy_on_screen = 0;
+                        game.level = 0;
+                        enemies.clear();
+                        paratroopers.clear();
+                        bombs.clear();
+                        ldivs.clear();
+                        rdivs.clear();
+                        bullets.clear();
+                        game_state = GameState::Game;
+                        game_phase = GamePhase::Helicopters;
+                    }
+                    if is_key_pressed(KeyCode::I) {
+                        game_state = GameState::Instructions;
+                    }
+                }
+            },
         }
+
+        // Clear vectors
+        match bombs.iter().position(|x| x.destroyed == true) {
+            Some(idx) => {
+                bombs.remove(idx);
+            },
+            None => {},
+        };
+
+        match enemies.iter().position(|x| x.destroyed == true) {
+            Some(idx) => {
+                enemies.remove(idx);
+            },
+            None => {},
+        };
+
+        match animations.iter().position(|x| x.animation_completed == true) {
+            Some(idx) => {
+                animations.remove(idx);
+            },
+            None => {},
+        };
+        
+        match bullets.iter().position(|x| x.destroyed == true) {
+            Some(idx) => {
+                bullets.remove(idx);
+            },
+            None => {},
+        };
+
+        match paratroopers.iter().position(|x| x.destroyed == true) {
+            Some(idx) => {
+                paratroopers.remove(idx);
+            },
+            None => {},
+        };
+
+        match ldivs.iter().position(|x| x.destroyed == true) {
+            Some(idx) => {
+                ldivs.remove(idx);
+            },
+            None => {},
+        };
+
+        match rdivs.iter().position(|x| x.destroyed == true) {
+            Some(idx) => {
+                rdivs.remove(idx);
+            },
+            None => {},
+        };
 
         next_frame().await
     }

@@ -18,6 +18,7 @@ pub struct Canon {
     pub ey: f32, // canon end y
     r: f32, // radius
     status: Status,
+    pub destroyed: bool,
 }
 
 impl Canon {
@@ -30,6 +31,7 @@ impl Canon {
             ey: screen_height() - 80.0 - STATUS_LINE_HEIGHT,
             r: 30.0,
             status: Status::Idle,
+            destroyed: false,
         }
     }
 
@@ -38,28 +40,31 @@ impl Canon {
         draw_line(0.0,screen_height() - STATUS_LINE_HEIGHT, screen_width(), screen_height() - STATUS_LINE_HEIGHT,2.0, CANON_COLOR);
         // Canon stand
         draw_rectangle(screen_width() / 2.0 - 40.0, screen_height() - 60.0 - STATUS_LINE_HEIGHT, 80.0, 60.0, WHITE);
-        // Canon base
-        draw_rectangle(screen_width() / 2.0 - 15.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 30.0, 20.0, CANON_HEAD_COLOR);
-        // Canon
-        draw_line(self.cx,self.cy,self.ex + screen_width() / 2.0, self.ey + screen_height() - 80.0 - STATUS_LINE_HEIGHT,8.0, CANON_COLOR);
-        // Canon base
-        draw_circle(screen_width() / 2.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 15.0, CANON_HEAD_COLOR);
-        // Canon center
-        draw_circle(screen_width() / 2.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 4.0, CANON_COLOR);
-        // Canon end
-        draw_circle(self.ex + screen_width() / 2.0, self.ey + screen_height() - 80.0 - STATUS_LINE_HEIGHT, 4.0, CANON_COLOR);
+        
+        if !self.destroyed {
+            // Canon base
+            draw_rectangle(screen_width() / 2.0 - 15.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 30.0, 20.0, CANON_HEAD_COLOR);
+            // Canon
+            draw_line(self.cx,self.cy,self.ex + screen_width() / 2.0, self.ey + screen_height() - 80.0 - STATUS_LINE_HEIGHT,8.0, CANON_COLOR);
+            // Canon base
+            draw_circle(screen_width() / 2.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 15.0, CANON_HEAD_COLOR);
+            // Canon center
+            draw_circle(screen_width() / 2.0, screen_height() - 80.0 - STATUS_LINE_HEIGHT, 4.0, CANON_COLOR);
+            // Canon end
+            draw_circle(self.ex + screen_width() / 2.0, self.ey + screen_height() - 80.0 - STATUS_LINE_HEIGHT, 4.0, CANON_COLOR);
+        }
     }
 
     pub fn update(&mut self) {
-        if is_key_down(KeyCode::Left) {
+        if is_key_down(KeyCode::Left) || is_key_down(KeyCode::Kp4) {
             self.status = Status::MovingLeft;
         }
 
-        if is_key_down(KeyCode::Right) {
+        if is_key_down(KeyCode::Right) || is_key_down(KeyCode::Kp6) {
             self.status = Status::MovingRight;
         }
 
-        if is_key_down(KeyCode::Up) {
+        if is_key_down(KeyCode::Up) || is_key_down(KeyCode::Kp8) {
             self.status = Status::Idle;
         }
 
