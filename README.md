@@ -1,3 +1,5 @@
+# Paratrooper ![Build Status](https://github.com/denix666/paratrooper/actions/workflows/rust.yml/badge.svg)
+
 _Paratrooper clone written in Rust_
 
 **Please note, that game is in development at the moment, so it is still not comlpleted!**

@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Prep
+      run: sudo apt-get install libasound-dev -y
+      
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --release
+
+    - shell: bash
+      run: |
+        mv target/release/paratrooper paratrooper
+        chmod 777 paratrooper
+        tar cpfz paratrooper.tar.gz paratrooper assets
+        
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: paratrooper.tar.gz
