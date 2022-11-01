@@ -7,6 +7,7 @@ pub struct Resources {
     pub bomb: Sound,
     pub crash: Sound,
     pub outro: Sound,
+    pub intro: Sound,
 }
 
 impl Resources {
@@ -18,6 +19,7 @@ impl Resources {
             bomb: load_sound("assets/audio/bomb.ogg").await.unwrap(),
             crash: load_sound("assets/audio/crash.ogg").await.unwrap(),
             outro: load_sound("assets/audio/outro.ogg").await.unwrap(),
+            intro: load_sound("assets/audio/intro.ogg").await.unwrap(),
         }
     }
 }

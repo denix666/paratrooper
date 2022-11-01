@@ -1,4 +1,4 @@
-use macroquad::{prelude::*, audio::{PlaySoundParams, play_sound}};
+use macroquad::{prelude::*, audio::{PlaySoundParams, play_sound, stop_sound}};
 mod canon;
 mod paratrooper;
 use paratrooper::Paratrooper;
@@ -61,6 +61,11 @@ async fn main() {
     let mut game_state = GameState::Intro;
     let mut game_phase = GamePhase::Helicopters;
     let resources = Resources::new().await;
+
+    play_sound(resources.intro, PlaySoundParams {
+        looped: false,
+        volume: 0.3,
+    });
     
     loop {
         clear_background(BLACK);
@@ -100,18 +105,12 @@ async fn main() {
             },
             
             GameState::Game => {
+                stop_sound(resources.intro);
                 draw_score(&game.score.to_string());
                 draw_hiscore(&game.hiscore.to_string());
 
                 canon.draw();
                 canon.update();
-
-                // DEBUG
-                if is_key_pressed(KeyCode::Space) {
-                    bombs.push(
-                        Bomb::new(100.0, 50.0 + 30.0, "left".to_string()).await,
-                    );
-                }
 
                 match game_phase {
                     GamePhase::Helicopters => {
@@ -189,6 +188,20 @@ async fn main() {
                     },
                     GamePhase::Paratroopers => {
                         // 4 or more divs landed - game over
+                        ////////////////////////////////////
+                        // if ldivs.len() >= 4 {
+                        //     ldivs.sort_by(|a, b| b.x.partial_cmp(&a.x).unwrap());
+                        //     for i in &mut ldivs {
+                                
+                        //     }
+                        // } else {
+                        //     rdivs.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
+                        //     for i in &mut rdivs {
+                                
+                        //     }
+                        // }
+                        
+                        
                         canon.destroyed = true;
                         animations.push(
                             Animation::new(screen_width() / 2.0 - 24.0, screen_height() - 150.0, "enemy_explode").await,
