@@ -15,6 +15,8 @@ mod game;
 use game::Game;
 mod animation;
 use animation::Animation;
+mod end_game;
+use end_game::EndAnimation;
 mod functions;
 use functions::*;
 extern crate rand;
@@ -61,6 +63,13 @@ async fn main() {
     let mut game_state = GameState::Intro;
     let mut game_phase = GamePhase::Helicopters;
     let resources = Resources::new().await;
+    let mut divs_loaded = false;
+    let mut end_animation = EndAnimation::new(
+        0.0, 0.0,
+        0.0, 0.0,
+        0.0, 0.0,
+        0.0, 0.0
+        ).await;
 
     play_sound(resources.intro, PlaySoundParams {
         looped: false,
@@ -99,6 +108,11 @@ async fn main() {
                     ldivs.clear();
                     rdivs.clear();
                     bullets.clear();
+                    end_animation.animation_a_completed = false;
+                    end_animation.animation_b_completed = false;
+                    end_animation.animation_c_completed = false;
+                    end_animation.animation_d_completed = false;
+                    divs_loaded = false;
                     game_state = GameState::Game;
                     game_phase = GamePhase::Helicopters;
                 }
@@ -189,29 +203,74 @@ async fn main() {
                     GamePhase::Paratroopers => {
                         // 4 or more divs landed - game over
                         ////////////////////////////////////
-                        // if ldivs.len() >= 4 {
-                        //     ldivs.sort_by(|a, b| b.x.partial_cmp(&a.x).unwrap());
-                        //     for i in &mut ldivs {
-                                
-                        //     }
-                        // } else {
-                        //     rdivs.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
-                        //     for i in &mut rdivs {
-                                
-                        //     }
-                        // }
                         
-                        
-                        canon.destroyed = true;
-                        animations.push(
-                            Animation::new(screen_width() / 2.0 - 24.0, screen_height() - 150.0, "enemy_explode").await,
-                        );
-                        game.fail_time = get_time();
-                        play_sound(resources.outro, PlaySoundParams {
-                            looped: false,
-                            volume: 0.3,
-                        });
-                        game_state = GameState::LevelFail;
+                        if !divs_loaded {
+                            for div in &mut ldivs {
+                                if div.y < 545.0 {
+                                    div.x += 0.1
+                                }
+                                if div.y < 520.0 {
+                                    div.x += 0.2
+                                }
+                            }
+
+                            for div in &mut rdivs {
+                                if div.y < 545.0 {
+                                    div.x -= 0.1
+                                }
+                                if div.y < 520.0 {
+                                    div.x -= 0.2
+                                }
+                            }
+                            
+                            ldivs.sort_by(|a, b| b.x.partial_cmp(&a.x).unwrap());
+                            rdivs.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
+
+                            if ldivs.len() >= 4 {
+                                end_animation.ax = ldivs[0].x;
+                                end_animation.ay = ldivs[0].y;
+                                end_animation.bx = ldivs[1].x;
+                                end_animation.by = ldivs[1].y;
+                                end_animation.cx = ldivs[2].x;
+                                end_animation.cy = ldivs[2].y;
+                                end_animation.dx = ldivs[3].x;
+                                end_animation.dy = ldivs[3].y;
+                                
+                                for div in &mut ldivs {
+                                    div.destroyed = true;
+                                }
+                            } else {
+                                end_animation.ax = rdivs[0].x;
+                                end_animation.ay = rdivs[0].y;
+                                end_animation.bx = rdivs[1].x;
+                                end_animation.by = rdivs[1].y;
+                                end_animation.cx = rdivs[2].x;
+                                end_animation.cy = rdivs[2].y;
+                                end_animation.dx = rdivs[3].x;
+                                end_animation.dy = rdivs[3].y;
+                                
+                                for div in &mut rdivs {
+                                    div.destroyed = true;
+                                }
+                            }
+                            divs_loaded = true;
+                        } else {
+                            end_animation.draw();
+                        }
+
+                        if end_animation.animation_d_completed {
+                            end_animation.draw();
+                            canon.destroyed = true;
+                            animations.push(
+                                Animation::new(screen_width() / 2.0 - 24.0, screen_height() - 150.0, "enemy_explode").await,
+                            );
+                            game.fail_time = get_time();
+                            play_sound(resources.outro, PlaySoundParams {
+                                looped: false,
+                                volume: 0.3,
+                            });
+                            game_state = GameState::LevelFail;
+                        }
                     },
                 }
 
@@ -428,6 +487,7 @@ async fn main() {
                 draw_score(&game.score.to_string());
                 draw_hiscore(&game.hiscore.to_string());
 
+                end_animation.draw();
                 canon.draw();
 
                 for animation in &mut animations {
@@ -453,6 +513,11 @@ async fn main() {
                         ldivs.clear();
                         rdivs.clear();
                         bullets.clear();
+                        end_animation.animation_a_completed = false;
+                        end_animation.animation_b_completed = false;
+                        end_animation.animation_c_completed = false;
+                        end_animation.animation_d_completed = false;
+                        divs_loaded = false;
                         game_state = GameState::Game;
                         game_phase = GamePhase::Helicopters;
                     }
