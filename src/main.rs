@@ -38,8 +38,10 @@ pub enum GamePhase {
 }
 
 fn window_conf() -> Conf {
+    let mut title = String::from("Paratrooper v");
+    title.push_str(env!("CARGO_PKG_VERSION"));
     Conf {
-        window_title: "Paratrooper"
+        window_title: title
         .to_owned(),
         fullscreen: false,
         sample_count: 16,
@@ -113,6 +115,7 @@ async fn main() {
                     end_animation.animation_c_completed = false;
                     end_animation.animation_d_completed = false;
                     divs_loaded = false;
+                    game.destoyed_by_bomb = false;
                     game_state = GameState::Game;
                     game_phase = GamePhase::Helicopters;
                 }
@@ -464,6 +467,7 @@ async fn main() {
                             Animation::new(screen_width() / 2.0 - 24.0, screen_height() - 150.0, "enemy_explode").await,
                         );
                         game.fail_time = get_time();
+                        game.destoyed_by_bomb = true;
                         play_sound(resources.outro, PlaySoundParams {
                             looped: false,
                             volume: 0.3,
@@ -487,7 +491,9 @@ async fn main() {
                 draw_score(&game.score.to_string());
                 draw_hiscore(&game.hiscore.to_string());
 
-                end_animation.draw();
+                if !game.destoyed_by_bomb {
+                    end_animation.draw();
+                }
                 canon.draw();
 
                 for animation in &mut animations {
@@ -518,6 +524,7 @@ async fn main() {
                         end_animation.animation_c_completed = false;
                         end_animation.animation_d_completed = false;
                         divs_loaded = false;
+                        game.destoyed_by_bomb = false;
                         game_state = GameState::Game;
                         game_phase = GamePhase::Helicopters;
                     }

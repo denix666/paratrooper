@@ -7,6 +7,7 @@ pub struct Game {
     pub enemy_on_screen: i32,
     pub level: i32,
     pub fail_time: f64,
+    pub destoyed_by_bomb: bool,
 }
 
 impl Game {
@@ -20,6 +21,7 @@ impl Game {
             enemy_on_screen: 0,
             level: 0,
             fail_time: 0.0,
+            destoyed_by_bomb: false,
         }
     }
 }
