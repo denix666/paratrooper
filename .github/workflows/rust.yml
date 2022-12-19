@@ -9,10 +9,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  lin_build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Prep
       run: sudo apt-get install libasound-dev -y
@@ -25,9 +23,34 @@ jobs:
       run: |
         mv target/release/paratrooper paratrooper
         chmod 777 paratrooper
-        tar cpfz paratrooper.tar.gz paratrooper assets
+        tar cpfz paratrooper_linux_x86_64.tar.gz paratrooper assets
         
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: paratrooper.tar.gz
+        files: paratrooper_linux_x86_64.tar.gz
+
+  win_build:
+    runs-on: windows-latest
+    steps:
+    - name: Install rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        target: x86_64-pc-windows-msvc
+        override: true
+
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --release
+
+    - shell: bash
+      run: |
+        mv target/release/paratrooper paratrooper
+        7z a paratrooper_windows_x86_64.zip paratrooper.exe assets
+        
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: paratrooper_windows_x86_64.zip

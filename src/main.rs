@@ -1,4 +1,7 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use macroquad::{prelude::*, audio::{PlaySoundParams, play_sound, stop_sound}};
+use egui_macroquad::egui;
 mod canon;
 mod paratrooper;
 use paratrooper::Paratrooper;
@@ -29,6 +32,7 @@ pub enum GameState {
     Instructions,
     Game,
     LevelFail,
+    Paused,
 }
 
 pub enum GamePhase {
@@ -53,6 +57,8 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    let mut sound_enabled: bool = true;
+    let mut volume_level: f32 = 0.3;
     let mut game = Game::new().await;
     let mut canon = Canon::new().await;
     let mut bullets: Vec<Bullet> = Vec::new();
@@ -75,7 +81,7 @@ async fn main() {
 
     play_sound(resources.intro, PlaySoundParams {
         looped: false,
-        volume: 0.3,
+        volume: volume_level,
     });
     
     loop {
@@ -128,6 +134,10 @@ async fn main() {
 
                 canon.draw();
                 canon.update();
+
+                if is_key_pressed(KeyCode::Escape) {
+                    game_state = GameState::Paused;
+                }
 
                 match game_phase {
                     GamePhase::Helicopters => {
@@ -268,10 +278,12 @@ async fn main() {
                                 Animation::new(screen_width() / 2.0 - 24.0, screen_height() - 150.0, "enemy_explode").await,
                             );
                             game.fail_time = get_time();
-                            play_sound(resources.outro, PlaySoundParams {
-                                looped: false,
-                                volume: 0.3,
-                            });
+                            if sound_enabled {
+                                play_sound(resources.outro, PlaySoundParams {
+                                    looped: false,
+                                    volume: volume_level,
+                                });
+                            }
                             game_state = GameState::LevelFail;
                         }
                     },
@@ -300,10 +312,12 @@ async fn main() {
                                 Bomb::new(enemy.will_bomb_at, enemy.y + 30.0, side).await,
                             );
                             enemy.bomb_released = true;
-                            play_sound(resources.bomb, PlaySoundParams {
-                                looped: false,
-                                volume: 1.0,
-                            });
+                            if sound_enabled {
+                                play_sound(resources.bomb, PlaySoundParams {
+                                    looped: false,
+                                    volume: volume_level + 0.5,
+                                });
+                            }
                         }
                     }
                 }
@@ -375,10 +389,12 @@ async fn main() {
                 if is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::Kp8) {
                     bullets.push(Bullet::new(canon.ex + screen_width() / 2.0, canon.ey + screen_height() - 110.0, canon.angle).await);
                     game.score -= 1;
-                    play_sound(resources.shot, PlaySoundParams {
-                        looped: false,
-                        volume: 0.3,
-                    });
+                    if sound_enabled {
+                        play_sound(resources.shot, PlaySoundParams {
+                            looped: false,
+                            volume: volume_level,
+                        });
+                    }
                     if game.score < 0 {
                         game.score = 0;
                     }
@@ -393,10 +409,12 @@ async fn main() {
                                 enemy.destroyed = true;
                                 bullet.destroyed = true;
                                 game.score += 10;
-                                play_sound(resources.crash, PlaySoundParams {
-                                    looped: false,
-                                    volume: 0.3,
-                                });
+                                if sound_enabled {
+                                    play_sound(resources.crash, PlaySoundParams {
+                                        looped: false,
+                                        volume: volume_level,
+                                    });
+                                }
                                 animations.push(
                                     Animation::new(enemy.center_x() - 24.0, enemy.center_y() - 25.0, "enemy_explode").await,
                                 );
@@ -410,10 +428,12 @@ async fn main() {
                                 paratrooper.destroyed = true;
                                 bullet.destroyed = true;
                                 game.score += 5;
-                                play_sound(resources.crash, PlaySoundParams {
-                                    looped: false,
-                                    volume: 0.3,
-                                });
+                                if sound_enabled {
+                                    play_sound(resources.crash, PlaySoundParams {
+                                        looped: false,
+                                        volume: volume_level,
+                                    });
+                                }
                                 animations.push(
                                     Animation::new(paratrooper.trooper_x - 18.0, paratrooper.trooper_y - 19.0, "enemy_explode").await,
                                 );
@@ -427,10 +447,12 @@ async fn main() {
                                 bullet.destroyed = true;
                                 paratrooper.have_para = false;
                                 paratrooper.para_destroyed = true;
-                                play_sound(resources.crash, PlaySoundParams {
-                                    looped: false,
-                                    volume: 0.3,
-                                });
+                                if sound_enabled {
+                                    play_sound(resources.crash, PlaySoundParams {
+                                        looped: false,
+                                        volume: volume_level,
+                                    });
+                                }
                                 break;
                             }
                         }
@@ -441,10 +463,12 @@ async fn main() {
                                 bullet.destroyed = true;
                                 bomb.destroyed = true;
                                 game.score += 30;
-                                play_sound(resources.crash, PlaySoundParams {
-                                    looped: false,
-                                    volume: 0.3,
-                                });
+                                if sound_enabled {
+                                    play_sound(resources.crash, PlaySoundParams {
+                                        looped: false,
+                                        volume: volume_level,
+                                    });
+                                }
                                 animations.push(
                                     Animation::new(bomb.x, bomb.y, "bomb_explode").await,
                                 );
@@ -468,10 +492,12 @@ async fn main() {
                         );
                         game.fail_time = get_time();
                         game.destoyed_by_bomb = true;
-                        play_sound(resources.outro, PlaySoundParams {
-                            looped: false,
-                            volume: 0.3,
-                        });
+                        if sound_enabled {
+                            play_sound(resources.outro, PlaySoundParams {
+                                looped: false,
+                                volume: volume_level,
+                            });
+                        }
                         game_state = GameState::LevelFail;
                     }
                 }
@@ -485,6 +511,29 @@ async fn main() {
                 // Store Hi-Score in var
                 if game.score > game.hiscore {
                     game.hiscore = game.score;
+                }
+            },
+            GameState::Paused => {
+                draw_score(&game.score.to_string());
+                draw_hiscore(&game.hiscore.to_string());
+
+                egui_macroquad::ui(|egui_ctx| {
+                    egui::Window::new("Settings").current_pos([screen_height()/2.0 - 30.0, 225.0]).show(egui_ctx, |ui| {
+                        ui.checkbox(&mut sound_enabled, "sound");
+                        
+                        ui.add(egui::Slider::new(&mut volume_level, 0.0..=0.9).text("Volume level"));
+                        
+                        if ui.button("Close").clicked() {
+                            game_state = GameState::Game;
+                        }
+                    });
+                });
+                    
+                egui_macroquad::draw();
+
+                if is_key_pressed(KeyCode::Escape) {
+                    game.score = 0;
+                    game_state = GameState::Game;
                 }
             },
             GameState::LevelFail => {
