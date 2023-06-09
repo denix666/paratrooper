@@ -1,13 +1,16 @@
 use macroquad::prelude::*;
-extern crate rand;
-use rand::Rng;
 
 const ANIMATION_SPEED: i32 = 8;
 const ENEMY_SPEED: f32 = 220.0;
 
 fn load_paratroopers(enemy_type: String) -> bool {
     if enemy_type == "helicopter" {
-        rand::thread_rng().gen_bool(1.0 / 3.0)
+        match macroquad::rand::gen_range(0, 3) {
+            1 => true,
+            2 => true,
+            3 => true,
+            _ => false,
+        }
     } else {
         false
     }
@@ -15,7 +18,11 @@ fn load_paratroopers(enemy_type: String) -> bool {
 
 fn load_bombs(enemy_type: String) -> bool {
     if enemy_type == "jet" {
-        rand::thread_rng().gen_bool(1.0 / 2.0)
+        match macroquad::rand::gen_range(0, 2) {
+            1 => true,
+            2 => true,
+            _ => false,
+        }
     } else {
         false
     }
@@ -58,8 +65,8 @@ impl Enemy {
         };
 
         let jump_point: i32 = match from_side {
-            "left" => rand::thread_rng().gen_range(50..=300)/50*50,
-            _ => rand::thread_rng().gen_range(500..=750)/50*50,
+            "left" => macroquad::rand::gen_range(50, 300)/50*50,
+            _ => macroquad::rand::gen_range(500, 750)/50*50,
         };
 
         let bomb_push_point: f32 = match from_side {

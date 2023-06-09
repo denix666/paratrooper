@@ -22,8 +22,6 @@ mod end_game;
 use end_game::EndAnimation;
 mod functions;
 use functions::*;
-extern crate rand;
-use rand::Rng;
 
 const MAX_LANDED: usize = 4;
 
@@ -144,9 +142,9 @@ async fn main() {
                         // Spawn helicopters
                         if game.spawned_enemy < 10 + game.level { // Amount of helicopters in this phase
                             if game.enemy_amount_now < 6 {
-                                if get_time() - game.last_spawn_time >= rand::thread_rng().gen_range(0.4..=6.0) {
+                                if get_time() - game.last_spawn_time >= macroquad::rand::gen_range(0.4, 6.0) {
                                     game.last_spawn_time = get_time();
-                                    match rand::thread_rng().gen_range(0..=1) { 
+                                    match macroquad::rand::gen_range(0, 1) { 
                                         0 => {
                                             enemies.push(
                                                 Enemy::new("helicopter", "right").await,
@@ -180,9 +178,9 @@ async fn main() {
                     GamePhase::Jets => {
                         // Spawn jets
                         if game.spawned_enemy < 3 { // TODO how match jets will spawn in this phase (may be random amount?)
-                            if get_time() - game.last_spawn_time >= rand::thread_rng().gen_range(0.4..=6.0) {
+                            if get_time() - game.last_spawn_time >= macroquad::rand::gen_range(0.4, 6.0) {
                                 game.last_spawn_time = get_time();
-                                match rand::thread_rng().gen_range(0..=1) { 
+                                match macroquad::rand::gen_range(0, 1) { 
                                     0 => {
                                         enemies.push(
                                             Enemy::new("jet", "right").await,
@@ -532,7 +530,6 @@ async fn main() {
                 egui_macroquad::draw();
 
                 if is_key_pressed(KeyCode::Escape) {
-                    game.score = 0;
                     game_state = GameState::Game;
                 }
             },

@@ -1,6 +1,4 @@
 use macroquad::prelude::*;
-extern crate rand;
-use rand::Rng;
 
 const SPEED: f32 = 220.0;
 
@@ -30,7 +28,7 @@ impl Paratrooper {
             destroyed: false,
             para_destroyed: false,
             have_para: false,
-            open_para_at: rand::thread_rng().gen_range(150.0..=400.0),
+            open_para_at: macroquad::rand::gen_range(150.0, 400.0),
             landed: false,
         }
     }
