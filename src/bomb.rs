@@ -17,7 +17,7 @@ impl Bomb {
         Self {
             x,
             y,
-            texture: load_texture("assets/bomb.png").await.unwrap(),
+            texture: Texture2D::from_file_with_format(include_bytes!("../assets/bomb.png"), None),
             rect: Rect::new(0.0, 0.0, 10.0, 10.0),
             destroyed: false,
             gravi: 1.0,

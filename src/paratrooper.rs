@@ -21,8 +21,8 @@ impl Paratrooper {
         Self {
             trooper_x,
             trooper_y,
-            para_texture: load_texture("assets/para.png").await.unwrap(),
-            trooper_texture: load_texture("assets/trooper.png").await.unwrap(),
+            para_texture: Texture2D::from_file_with_format(include_bytes!("../assets/para.png"), None),
+            trooper_texture: Texture2D::from_file_with_format(include_bytes!("../assets/trooper.png"), None),
             para_rect: Rect::new(0.0, 0.0, 32.0, 37.0),
             trooper_rect: Rect::new(0.0, 0.0, 12.0, 23.0),
             destroyed: false,
@@ -40,7 +40,7 @@ impl Paratrooper {
         };
 
         self.trooper_y += land_speed;
-        
+
         self.para_rect.w = self.para_texture.width();
         self.para_rect.h = self.para_texture.height();
         self.para_rect.x = self.trooper_x - 10.0;
@@ -54,7 +54,7 @@ impl Paratrooper {
         if self.trooper_y > self.open_para_at && !self.have_para && !self.para_destroyed {
             self.have_para = true;
         }
-        
+
         if self.trooper_y > screen_height() - 30.0 - self.trooper_texture.height() && !self.have_para {
             self.destroyed = true;
         }
@@ -64,7 +64,7 @@ impl Paratrooper {
         }
     }
 
-    
+
     pub fn draw(&mut self) {
         if !self.landed {
             self.update();

@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::hash::{BuildHasher, Hasher};
 use macroquad::{prelude::*, audio::{PlaySoundParams, play_sound, stop_sound}};
 use egui_macroquad::egui;
 mod canon;
@@ -81,14 +82,14 @@ async fn main() {
         looped: false,
         volume: volume_level,
     });
-    
+
     loop {
         clear_background(BLACK);
 
         match game_state {
             GameState::Intro => {
                 draw_texture(resources.intro_texture, 0.0, 0.0, WHITE);
-                
+
                 if is_key_pressed(KeyCode::Space) {
                     game.score = 0;
                     game_state = GameState::Game;
@@ -100,7 +101,7 @@ async fn main() {
 
             GameState::Instructions => {
                 draw_texture(resources.instructions_texture, 0.0, 0.0, WHITE);
-                
+
                 if is_key_pressed(KeyCode::Space) {
                     game.score = 0;
                     canon.destroyed = false;
@@ -124,7 +125,7 @@ async fn main() {
                     game_phase = GamePhase::Helicopters;
                 }
             },
-            
+
             GameState::Game => {
                 stop_sound(resources.intro);
                 draw_score(&game.score.to_string());
@@ -144,7 +145,8 @@ async fn main() {
                             if game.enemy_amount_now < 6 {
                                 if get_time() - game.last_spawn_time >= macroquad::rand::gen_range(0.4, 6.0) {
                                     game.last_spawn_time = get_time();
-                                    match macroquad::rand::gen_range(0, 1) { 
+                                    quad_rand::srand(std::hash::RandomState::new().build_hasher().finish() as _);
+                                    match quad_rand::gen_range(0, 3) {
                                         0 => {
                                             enemies.push(
                                                 Enemy::new("helicopter", "right").await,
@@ -180,7 +182,8 @@ async fn main() {
                         if game.spawned_enemy < 3 { // TODO how match jets will spawn in this phase (may be random amount?)
                             if get_time() - game.last_spawn_time >= macroquad::rand::gen_range(0.4, 6.0) {
                                 game.last_spawn_time = get_time();
-                                match macroquad::rand::gen_range(0, 1) { 
+                                quad_rand::srand(std::hash::RandomState::new().build_hasher().finish() as _);
+                                match quad_rand::gen_range(0, 3) {
                                     0 => {
                                         enemies.push(
                                             Enemy::new("jet", "right").await,
@@ -214,7 +217,7 @@ async fn main() {
                     GamePhase::Paratroopers => {
                         // 4 or more divs landed - game over
                         ////////////////////////////////////
-                        
+
                         if !divs_loaded {
                             for div in &mut ldivs {
                                 if div.y < 545.0 {
@@ -233,7 +236,7 @@ async fn main() {
                                     div.x -= 0.2
                                 }
                             }
-                            
+
                             ldivs.sort_by(|a, b| b.x.partial_cmp(&a.x).unwrap());
                             rdivs.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
 
@@ -246,7 +249,7 @@ async fn main() {
                                 end_animation.cy = ldivs[2].y;
                                 end_animation.dx = ldivs[3].x;
                                 end_animation.dy = ldivs[3].y;
-                                
+
                                 for div in &mut ldivs {
                                     div.destroyed = true;
                                 }
@@ -259,7 +262,7 @@ async fn main() {
                                 end_animation.cy = rdivs[2].y;
                                 end_animation.dx = rdivs[3].x;
                                 end_animation.dy = rdivs[3].y;
-                                
+
                                 for div in &mut rdivs {
                                     div.destroyed = true;
                                 }
@@ -518,15 +521,15 @@ async fn main() {
                 egui_macroquad::ui(|egui_ctx| {
                     egui::Window::new("Settings").current_pos([screen_height()/2.0 - 30.0, 225.0]).show(egui_ctx, |ui| {
                         ui.checkbox(&mut sound_enabled, "sound");
-                        
+
                         ui.add(egui::Slider::new(&mut volume_level, 0.0..=0.9).text("Volume level"));
-                        
+
                         if ui.button("Close").clicked() {
                             game_state = GameState::Game;
                         }
                     });
                 });
-                    
+
                 egui_macroquad::draw();
 
                 if is_key_pressed(KeyCode::Escape) {
@@ -602,7 +605,7 @@ async fn main() {
             },
             None => {},
         };
-        
+
         match bullets.iter().position(|x| x.destroyed == true) {
             Some(idx) => {
                 bullets.remove(idx);

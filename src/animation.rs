@@ -13,27 +13,44 @@ pub struct Animation {
 
 impl Animation {
     pub async fn new(x: f32, y: f32, animation_type: &str) -> Self {
+        let die_sprites = vec![
+            Texture2D::from_file_with_format(include_bytes!("../assets/die_animation/skull_1.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/die_animation/skull_2.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/die_animation/skull_3.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/die_animation/skull_4.png"), None),
+        ];
+
+        let bomb_explode_sprites = vec![
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_1.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_2.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_3.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_4.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_5.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_6.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_7.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_8.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/bomb_explosion/explode_9.png"), None),
+        ];
+
+        let enemy_explosion_sprites = vec![
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_1.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_2.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_3.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_4.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_5.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_6.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_7.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_8.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_9.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy_explosion/enemy_explosion_10.png"), None),
+        ];
+
         let mut animation_sprites:Vec<Texture2D> = Vec::new();
-        
+
         match animation_type {
-            "die" => {
-                for i in 1..=4 { // Number of sprites in animation
-                    let path = format!("assets/die_animation/skull_{}.png", i);
-                    animation_sprites.push(load_texture(&path).await.unwrap());
-                }
-            },
-            "bomb_explode" => {
-                for i in 1..=9 { // Number of sprites in animation
-                    let path = format!("assets/bomb_explosion/explode_{}.png", i);
-                    animation_sprites.push(load_texture(&path).await.unwrap());
-                }
-            },
-            "enemy_explode" => {
-                for i in 1..=10 { // Number of sprites in animation
-                    let path = format!("assets/enemy_explosion/enemy_explosion_{}.png", i);
-                    animation_sprites.push(load_texture(&path).await.unwrap());
-                }
-            },
+            "die" => animation_sprites = die_sprites,
+            "bomb_explode" => animation_sprites = bomb_explode_sprites,
+            "enemy_explode" => animation_sprites = enemy_explosion_sprites,
             _ => {},
         };
 

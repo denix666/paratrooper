@@ -38,13 +38,11 @@ impl EndAnimation {
             bx: f32, by: f32,
             cx: f32, cy: f32,
             dx: f32, dy: f32) -> Self {
-        
-        let mut sprites:Vec<Texture2D> = Vec::new();
 
-        for i in 1..=2 {
-            let path = format!("assets/divs/div_{}.png", i);
-            sprites.push(load_texture(&path).await.unwrap());
-        }
+        let sprites = vec![
+            Texture2D::from_file_with_format(include_bytes!("../assets/divs/div_1.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/divs/div_2.png"), None),
+        ];
 
         Self {
             ax,
@@ -153,7 +151,7 @@ impl EndAnimation {
             self.dy = 501.0;
         }
     }
-    
+
     pub fn draw(&mut self) {
         self.update_a();
         if self.animation_a_completed {

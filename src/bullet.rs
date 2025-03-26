@@ -17,10 +17,10 @@ impl Bullet {
         Self { x,
             y,
             angle,
-            texture: load_texture("assets/bullet.png").await.unwrap(),
+            texture: Texture2D::from_file_with_format(include_bytes!("../assets/bullet.png"), None),
             destroyed: false,
             rect: Rect::new(x, y, 3.0, 3.0),
-            radius: 20.0, 
+            radius: 20.0,
         }
     }
 
@@ -29,7 +29,7 @@ impl Bullet {
 
         self.x = self.radius*self.angle.cos() + screen_width() / 2.0;
         self.y = self.radius*self.angle.sin() + screen_height() - 110.0;
-        
+
         if self.y < 0.0  || self.x < 0.0 || self.x > screen_width() {
             self.destroyed = true;
         }

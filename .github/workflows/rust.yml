@@ -14,7 +14,7 @@ jobs:
     steps:
     - name: Prep
       run: sudo apt-get install libasound-dev -y
-      
+
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --release
@@ -23,8 +23,8 @@ jobs:
       run: |
         mv target/release/paratrooper paratrooper
         chmod 777 paratrooper
-        tar cpfz paratrooper_linux_x86_64.tar.gz paratrooper assets
-        
+        tar cpfz paratrooper_linux_x86_64.tar.gz paratrooper
+
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
@@ -48,8 +48,8 @@ jobs:
     - shell: bash
       run: |
         mv target/release/paratrooper paratrooper
-        7z a paratrooper_windows_x86_64.zip paratrooper.exe assets
-        
+        7z a paratrooper_windows_x86_64.zip paratrooper.exe
+
     - name: Release
       uses: softprops/action-gh-release@v1
       with:

@@ -13,7 +13,7 @@ impl Divs {
         Self {
             x,
             y,
-            texture: load_texture("assets/trooper.png").await.unwrap(),
+            texture: Texture2D::from_file_with_format(include_bytes!("../assets/trooper.png"), None),
             rect: Rect::new(0.0, 0.0, 12.0, 23.0),
             destroyed: false,
         }

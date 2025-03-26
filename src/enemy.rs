@@ -47,11 +47,45 @@ pub struct Enemy {
 
 impl Enemy {
     pub async fn new(enemy_type: &str, from_side: &str) -> Self {
-        let mut sprites:Vec<Texture2D> = Vec::new();
+        let sprites:Vec<Texture2D>;
 
-        for i in 1..4 {
-            let path = format!("assets/enemy/{}_{}_{}.png", enemy_type, from_side, i);
-            sprites.push(load_texture(&path).await.unwrap());
+        let hl_left_sprites = vec![
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/helicopter_left_1.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/helicopter_left_2.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/helicopter_left_3.png"), None),
+        ];
+
+        let hl_right_sprites = vec![
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/helicopter_right_1.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/helicopter_right_2.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/helicopter_right_3.png"), None),
+        ];
+
+        let jet_left_sprites = vec![
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/jet_left_1.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/jet_left_2.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/jet_left_3.png"), None),
+        ];
+
+        let jet_right_sprites = vec![
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/jet_right_1.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/jet_right_2.png"), None),
+            Texture2D::from_file_with_format(include_bytes!("../assets/enemy/jet_right_3.png"), None),
+        ];
+
+        match enemy_type {
+            "helicopter" => {
+                match from_side {
+                    "left" => sprites = hl_left_sprites,
+                    _ => sprites = hl_right_sprites,
+                };
+            },
+            _ => {
+                match from_side {
+                    "left" => sprites = jet_left_sprites,
+                    _ => sprites = jet_right_sprites,
+                };
+            },
         }
 
         let start_x = match from_side {
@@ -123,7 +157,7 @@ impl Enemy {
                 self.destroyed = true;
             }
         }
-        
+
         self.rect.w = self.texture[self.cur_frame].width();
         self.rect.h = self.texture[self.cur_frame].height();
         self.rect.x = self.x;
